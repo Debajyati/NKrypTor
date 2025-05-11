@@ -1,0 +1,7 @@
+[theme]
+base = "dark"
+primaryColor = "#0acc1c"
+linkColor = "#765ff4"
+
+[server]
+maxUploadSize = 50
