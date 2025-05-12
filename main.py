@@ -6,7 +6,7 @@ import uuid
 from PIL import Image
 
 st.title('NKrypTor')
-st.header('A Demo Website for Encrypting Images Using Various Algorithms')
+st.header('A Demo Website for Encrypting & Decrypting Images Using Various Algorithms')
 
 options_tuple = (
     "Basic XOR Encryption",
@@ -28,6 +28,7 @@ def download_password(password:str | int) :
     unique_id = str(uuid.uuid4())
     st.download_button(
         label="Download password for Recovery",
+        type="primary",
         data=password if type(password) == str else str(password),
         file_name=f"Recovery-Password{unique_id}.txt",
         icon=":material/download:",
@@ -47,17 +48,6 @@ def download_encrypted_data(encrypted_data):
         file_name=f"encrypted_image{unique_id}.enc",
         mime="application/octet-stream"
     )
-
-# @st.fragment
-# def download_image(image:Image.Image, filename:str) :
-    # st.download_button(
-        # label="Download Image",
-        # type="primary",
-        # data=io.BytesIO(image.tobytes()),
-        # file_name=filename,
-        # mime="image/png",
-        # icon=":material/download:",
-    # )
 
 def decrypt_image(encrypted_data: bytes, password: str, mode: str, img_size=None, img_mode=None):
     if mode == "Electronic CodeBook Mode":
@@ -100,7 +90,6 @@ def decrypt_previously_encrypted_image():
         try:
             if option == "Basic XOR Encryption":
                 encrypted_image = Image.open(io.BytesIO(uploadedFile.read()))
-                # encrypted_image = encrypted_image.convert("RGBA")  # Force a consistent mode
                 decrypted_image = basic_xor.crypt(encrypted_image, int(password))
             else:
                 encrypted_data = uploadedFile.read()
@@ -114,7 +103,7 @@ def decrypt_previously_encrypted_image():
 
             [column] = st.columns(1,border=True)
 
-            st.info("❗ Right click or long press on the image to download")
+            st.info("ℹ️ Right click or long press on the image to download")
 
             with column:
                 st.image(decrypted_image, caption="Decrypted Image", use_container_width=True)
@@ -132,7 +121,7 @@ def main():
     password: str | int = ""
     if st.button("Generate secure random password",type="primary"):
         password = generate_password(str(option))
-        st.info("To get the password input box again, reselect the encryption mode from the dropdown menu.")
+        st.info("ℹ️ To get the password input box again, reselect the encryption mode from the dropdown menu.")
     else:
         if option == options_tuple[0]:
             password = st.number_input("Enter a numeric key for encryption: Range - [0,255]",min_value=0,max_value=255)
@@ -142,7 +131,7 @@ def main():
     col1, col2, col3 = st.columns(3, border=True)
 
     if uploadedFile and option and password:
-        st.info("❗ Right click or long press on the image to download")
+        st.info("ℹ️ Right click or long press on the image to download")
         original_image = Image.open(uploadedFile).copy()
         with col1:
             st.image(original_image, caption="Original Image", use_container_width=True)
@@ -159,7 +148,7 @@ def main():
             elif option == options_tuple[1]:  # ECB
                 _, encrypted_bytes = ecb.encrypt_image(original_image, str(password))
                 with col2:
-                    st.success("Image encrypted successfully.")
+                    st.success("✅ Image encrypted successfully.")
                     download_encrypted_data(encrypted_bytes)
                 decrypted_image = ecb.decrypt_image(encrypted_bytes, str(password))
                 with col3:
@@ -172,7 +161,7 @@ def main():
                 encrypted_bytes = cbc.encrypt_image(original_image, str(password))
 
                 with col2:
-                    st.success("Image encrypted successfully.")
+                    st.success("✅ Image encrypted successfully.")
                     download_encrypted_data(encrypted_bytes)
                 # Decrypt to verify round trip
                 try:
@@ -188,7 +177,7 @@ def main():
             elif option == options_tuple[3]:  # PCBC
                 _, encrypted_bytes = pcbc.encrypt_image(original_image, str(password))
                 with col2:
-                    st.success("Image encrypted successfully.")
+                    st.success("✅ Image encrypted successfully.")
                     download_encrypted_data(encrypted_bytes)
                 try:
                     decrypted_image = pcbc.decrypt_image(
@@ -206,7 +195,7 @@ def main():
             elif option == options_tuple[4]:  # CFB
                 _, encrypted_bytes = cfb.encrypt_image(original_image, str(password))
                 with col2:
-                    st.success("Image encrypted successfully.")
+                    st.success("✅ Image encrypted successfully.")
                     download_encrypted_data(encrypted_bytes)
                 decrypted_image = cfb.decrypt_image(encrypted_bytes, str(password))
                 with col3:
@@ -218,7 +207,7 @@ def main():
 
             password = f"password: {password}\nheight: {original_image.size[1]}\nwidth: {original_image.size[0]}\nimage_mode: {original_image.mode}" if option == "Propagating Cipher Block Chaining" else f"password: {password}"
             download_password(password)
-            st.info("❗ If you want to decrypt the image again, you have to use the same password and options used to encrypt the image.")
+            st.info("ℹ️ If you want to decrypt the image again, you have to use the same password and options used to encrypt the image.")
             st.warning("⚠️ If you encrypted the image in PCBC mode, You get the height, width and color mode (for decryption) of the original image along with the password in the password download file.")
             st.html(
                 "<footer style='text-align:center;bottom:1rem'>The 'Decrypted Image' is to show that the Algorithms are correct and with the right key/password the original_image can be recovered</footer>"
